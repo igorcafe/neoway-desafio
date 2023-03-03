@@ -8,6 +8,7 @@ import (
 	"runtime/pprof"
 	"strings"
 
+	"github.com/igoracmelo/neoway-desafio/util"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -58,6 +59,8 @@ func main() {
 		log.Panicf("failed to open %s: %v", os.Args[1], err)
 	}
 
+	log.Printf("using file: %s", os.Args[1])
+
 	_, err = db.Prepare(context.Background(), "stmt-insert-customer",
 		`INSERT INTO Customer (
 			cpf,
@@ -94,13 +97,13 @@ func main() {
 		total++
 
 		cols := strings.Fields(strings.ToUpper(scanner.Text()))
-		customer, err := CustomerFrom(cols)
+		args, err := util.SanitizeColumns(cols)
 		if err != nil {
-			log.Printf("failed to parse customer data (%v): %v", cols, err)
+			log.Printf("failed to sanitize customer data (%v): %v", cols, err)
 			continue
 		}
 
-		_ = batch.Queue("stmt-insert-customer", customer.ToArgs()...)
+		_ = batch.Queue("stmt-insert-customer", args...)
 
 		if total%batchSize == 0 {
 			n, err := sendBatch(db, batch)

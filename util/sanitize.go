@@ -5,20 +5,63 @@ import (
 	"unicode"
 )
 
-func SanitizeNullable(val string) string {
-	if val == "NULL" {
-		return ""
+func SanitizeColumns(cols []string) ([]any, error) {
+	res := make([]any, 8)
+
+	cpf := cols[0]
+	private := cols[1] == "1"
+	incomplete := cols[2] == "1"
+	lastBoughtAt := cols[3]
+	ticketAverage := cols[4]
+	ticketLastPurchase := cols[5]
+	storeLastPurchase := cols[6]
+	storeMostFrequent := cols[7]
+
+	if cpf != "NULL" {
+		cpf, err := SanitizeCpfOrCnpj(cpf)
+		if err != nil {
+			return nil, err
+		}
+		res[0] = cpf
 	}
-	return val
+
+	res[1] = private
+	res[2] = incomplete
+
+	if lastBoughtAt != "NULL" {
+		res[3] = lastBoughtAt
+	}
+
+	if ticketAverage != "NULL" {
+		res[4] = SanitizeTicket(ticketAverage)
+	}
+
+	if ticketLastPurchase != "NULL" {
+		res[5] = SanitizeTicket(ticketLastPurchase)
+	}
+
+	if storeLastPurchase != "NULL" {
+		storeLastPurchase, err := SanitizeCpfOrCnpj(storeLastPurchase)
+		if err != nil {
+			return nil, err
+		}
+		res[6] = storeLastPurchase
+	}
+
+	if storeMostFrequent != "NULL" {
+		storeMostFrequent, err := SanitizeCpfOrCnpj(storeMostFrequent)
+		if err != nil {
+			return nil, err
+		}
+		res[7] = storeMostFrequent
+	}
+
+	return res, nil
 }
 
 // Remove todos os caracteres, exceto os numéricos.
 // Optei por não usar regexp por ser um caso mais simples.
-func SanitizeCpfOrCnpj(val string) string {
-	if val == "NULL" {
-		return ""
-	}
-
+func SanitizeCpfOrCnpj(val string) (string, error) {
 	res := &strings.Builder{}
 	res.Grow(len(val))
 
@@ -27,15 +70,14 @@ func SanitizeCpfOrCnpj(val string) string {
 			res.WriteRune(r)
 		}
 	}
-	return res.String()
+
+	s := res.String()
+	err := ValidateCpfOrCnpj(s)
+	return s, err
 }
 
 // Remove ponto, se houver, e substitui vírgula por ponto
 func SanitizeTicket(val string) string {
-	if val == "NULL" {
-		return ""
-	}
-
 	res := &strings.Builder{}
 	res.Grow(len(val))
 
