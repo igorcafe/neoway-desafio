@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime/pprof"
 	"strings"
-	"unicode"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -99,46 +98,4 @@ func main() {
 	}
 
 	log.Println("finished processing data")
-}
-
-func SanitizeNullable(val string) string {
-	if val == "NULL" {
-		return ""
-	}
-	return val
-}
-
-func SanitizeCpfOrCnpj(val string) string {
-	if val == "NULL" {
-		return ""
-	}
-
-	res := ""
-	for _, r := range val {
-		if unicode.IsDigit(r) {
-			res += string(r)
-		}
-	}
-	return res
-}
-
-func SanitizeTicket(val string) string {
-	if val == "NULL" {
-		return ""
-	}
-
-	res := ""
-
-	// remove `.` e substitui `,` por `.`
-	for _, r := range val {
-		if r == '.' {
-			continue
-		} else if r == ',' {
-			res += "."
-		} else {
-			res += string(r)
-		}
-	}
-
-	return res
 }

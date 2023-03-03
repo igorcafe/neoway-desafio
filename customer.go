@@ -14,12 +14,12 @@ type Customer struct {
 }
 
 func CustomerFrom(args []string) (*Customer, error) {
-	args[0] = SanitizeCpfOrCnpj(args[0])
-	args[3] = SanitizeNullable(args[3])
-	args[4] = SanitizeTicket(args[4])
-	args[5] = SanitizeTicket(args[5])
-	args[6] = SanitizeCpfOrCnpj(args[6])
-	args[7] = SanitizeCpfOrCnpj(args[7])
+	args[0] = util.SanitizeCpfOrCnpj(args[0])
+	args[3] = util.SanitizeNullable(args[3])
+	args[4] = util.SanitizeTicket(args[4])
+	args[5] = util.SanitizeTicket(args[5])
+	args[6] = util.SanitizeCpfOrCnpj(args[6])
+	args[7] = util.SanitizeCpfOrCnpj(args[7])
 
 	customer := &Customer{}
 
@@ -27,7 +27,7 @@ func CustomerFrom(args []string) (*Customer, error) {
 		return nil, err
 	}
 
-	customer.Cpf = SanitizeCpfOrCnpj(args[0])
+	customer.Cpf = util.SanitizeCpfOrCnpj(args[0])
 	customer.Private = args[1] == "1"
 	customer.Incomplete = args[2] == "1"
 
