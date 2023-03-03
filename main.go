@@ -79,7 +79,11 @@ func main() {
 	log.Println("started processing data")
 
 	succeeded := 0
+	failed := 0
 	total := 0
+
+	batch := &pgx.Batch{}
+	batchSize := 50
 
 	for scanner.Scan() {
 		total++
@@ -91,15 +95,40 @@ func main() {
 			continue
 		}
 
-		_, err = db.Exec(context.Background(), "stmt-insert-customer", customer.ToArgs()...)
-		if err != nil {
-			log.Printf("failed to insert customer data (%v): %v", customer, err)
-			continue
-		}
+		_ = batch.Queue("stmt-insert-customer", customer.ToArgs()...)
 
-		succeeded++
+		if total%batchSize == 0 {
+			n, err := sendBatch(db, batch)
+			if err != nil {
+				log.Printf("failed to bulk insert: %v", err)
+				failed += n
+			} else {
+				succeeded += n
+			}
+			batch = &pgx.Batch{}
+		}
 	}
 
-	failed := total - succeeded
+	n, err := sendBatch(db, batch)
+	if err != nil {
+		log.Printf("failed to bulk insert: %v", err)
+		failed += n
+	} else {
+		succeeded += n
+	}
+
 	log.Printf("finished processing data: %d succeeded, %d failed, %d total", succeeded, failed, total)
+}
+
+func sendBatch(conn *pgx.Conn, batch *pgx.Batch) (int, error) {
+	res := conn.SendBatch(context.Background(), batch)
+
+	for i := 0; i < batch.Len(); i++ {
+		_, err := res.Exec()
+		if err != nil {
+			return i, err
+		}
+	}
+
+	return batch.Len(), res.Close()
 }
