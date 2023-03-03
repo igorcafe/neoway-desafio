@@ -37,16 +37,16 @@ func main() {
 	log.Println("connection succeeded")
 
 	_, err = db.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS Customer (
-			id SERIAL PRIMARY KEY,
-			cpf VARCHAR(18) NOT NULL,
-			private BOOLEAN NOT NULL,
-			incomplete BOOLEAN NOT NULL,
-			last_bought_at DATE,
-			ticket_average NUMERIC(10, 2),
-			ticket_last_purchase NUMERIC(10, 2),
-			cnpj_most_frequent_store CHAR(18),
-			cnpj_last_purchase_store CHAR(18)
+		CREATE TABLE IF NOT EXISTS customer (
+			id                        SERIAL PRIMARY KEY,
+			cpf                       TEXT,
+			private                   BOOLEAN,
+			incomplete                BOOLEAN,
+			last_bought_at            DATE,
+			ticket_average            DECIMAL,
+			ticket_last_purchase      DECIMAL,
+			cnpj_most_frequent_store  TEXT,
+			cnpj_last_purchase_store  TEXT
 		);
 	`)
 	if err != nil {
