@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"runtime/pprof"
 	"strings"
@@ -18,16 +18,20 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		log.Println("running pprof for CPU")
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
 
+	log.Println("trying to connect to database", os.Getenv("DATABASE_URL"))
 	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		// TODO:
 		panic(err)
 	}
 	defer db.Close(context.Background())
+
+	log.Println("connection succeeded")
 
 	_, err = db.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS Customer (
@@ -77,9 +81,10 @@ func main() {
 	// ignorar primeira linha
 	scanner.Scan()
 
+	log.Println("started processing data")
+
 	for scanner.Scan() {
 		cols := strings.Fields(scanner.Text())
-		fmt.Println(cols)
 		customer, err := CustomerFrom(cols)
 		if err != nil {
 			// TODO:
@@ -93,6 +98,7 @@ func main() {
 		}
 	}
 
+	log.Println("finished processing data")
 }
 
 func SanitizeNullable(val string) string {
