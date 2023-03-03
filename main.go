@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"strings"
 	"unicode"
 
@@ -12,7 +13,15 @@ import (
 )
 
 func main() {
-	os.Setenv("DATABASE_URL", "postgres://root:root@localhost") // FIXME
+	if os.Getenv("PPROF") == "cpu" {
+		f, err := os.Create("cpu.prof")
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		// TODO:
