@@ -36,17 +36,18 @@ func SanitizeTicket(val string) string {
 		return ""
 	}
 
-	res := ""
+	res := &strings.Builder{}
+	res.Grow(len(val))
 
 	for _, r := range val {
 		if r == '.' {
 			continue
 		} else if r == ',' {
-			res += "."
+			res.WriteRune('.')
 		} else {
-			res += string(r)
+			res.WriteRune(r)
 		}
 	}
 
-	return res
+	return res.String()
 }
