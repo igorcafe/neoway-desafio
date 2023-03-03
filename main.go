@@ -197,16 +197,17 @@ func SanitizeTicket(val string) string {
 	}
 
 	res := ""
+
+	// remove `.` e substitui `,` por `.`
 	for _, r := range val {
 		if r == '.' {
 			continue
-		}
-
-		if r == ',' {
+		} else if r == ',' {
 			res += "."
 		} else {
 			res += string(r)
 		}
 	}
+
 	return res
 }
