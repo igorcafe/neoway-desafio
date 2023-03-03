@@ -1,6 +1,7 @@
 package util
 
 import (
+	"strings"
 	"unicode"
 )
 
@@ -18,13 +19,15 @@ func SanitizeCpfOrCnpj(val string) string {
 		return ""
 	}
 
-	res := ""
+	res := &strings.Builder{}
+	res.Grow(len(val))
+
 	for _, r := range val {
 		if unicode.IsDigit(r) {
-			res += string(r)
+			res.WriteRune(r)
 		}
 	}
-	return res
+	return res.String()
 }
 
 // Remove ponto, se houver, e substitui vírgula por ponto
