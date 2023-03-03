@@ -11,95 +11,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Customer struct {
-	Cpf                string
-	Private            bool
-	Incomplete         bool
-	LastBoughtAt       *string
-	TicketAverage      *string
-	TicketLastPurchase *string
-	StoreLastPurchase  *string
-	StoreMostFrequent  *string
-}
-
-func CustomerFrom(args []string) (*Customer, error) {
-	args[0] = SanitizeCpfOrCnpj(args[0])
-	args[6] = SanitizeCpfOrCnpj(args[6])
-	args[7] = SanitizeCpfOrCnpj(args[7])
-
-	customer := &Customer{}
-
-	if err := ValidateCpfOrCnpj(args[0]); err != nil {
-		return nil, err
-	}
-
-	customer.Cpf = SanitizeCpfOrCnpj(args[0])
-	customer.Private = args[1] == "1"
-	customer.Incomplete = args[2] == "1"
-
-	if args[3] != "NULL" {
-		customer.LastBoughtAt = &args[3]
-	}
-
-	if args[4] != "NULL" {
-		customer.TicketAverage = &args[4]
-	}
-
-	if args[5] != "NULL" {
-		customer.TicketLastPurchase = &args[5]
-	}
-
-	if args[6] != "NULL" {
-		if err := ValidateCpfOrCnpj(args[6]); err != nil {
-			return nil, err
-		}
-
-		customer.StoreLastPurchase = &args[6]
-	}
-
-	if args[7] != "NULL" {
-		if err := ValidateCpfOrCnpj(args[7]); err != nil {
-			return nil, err
-		}
-
-		customer.StoreMostFrequent = &args[7]
-	}
-
-	return customer, nil
-}
-
-func (c *Customer) ToArgs() []any {
-	args := make([]any, 8)
-	args[0] = c.Cpf
-	args[1] = c.Private
-	args[2] = c.Incomplete
-	args[3] = c.LastBoughtAt
-	args[4] = c.TicketAverage
-	args[5] = c.TicketLastPurchase
-	args[6] = c.StoreLastPurchase
-	args[7] = c.StoreMostFrequent
-
-	return args
-}
-
-// TODO:
-func ValidateCpfOrCnpj(val string) error {
-	if len(val) != 11 && len(val) != 14 {
-		return fmt.Errorf("invalid CNPJ: %s", val)
-	}
-	return nil
-}
-
-func SanitizeCpfOrCnpj(val string) string {
-	res := ""
-	for _, r := range val {
-		if unicode.IsDigit(r) {
-			res += string(r)
-		}
-	}
-	return res
-}
-
 func main() {
 	os.Setenv("DATABASE_URL", "postgres://root:root@localhost") // FIXME
 	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
@@ -115,7 +26,7 @@ func main() {
 			cpf VARCHAR(18) NOT NULL,
 			private BOOLEAN NOT NULL,
 			incomplete BOOLEAN NOT NULL,
-			last_bought_at TIME,
+			last_bought_at DATE,
 			ticket_average NUMERIC(10, 2),
 			ticket_last_purchase NUMERIC(10, 2),
 			cnpj_most_frequent_store CHAR(18),
@@ -174,18 +85,128 @@ func main() {
 			// TODO:
 			panic(err)
 		}
-
-		// converter []string para []any é um pouco manual
-		// for i := 0; i < 8; i++ {
-		// 	columnValues[i] = columnValuesString[i]
-		// }
-
-		// res, err := stmtInsertCustomer.Exec(columnValues)
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		// res.RowsAffected()
-		// res.LastInsertId()
 	}
+}
+
+type Customer struct {
+	Cpf                string
+	Private            bool
+	Incomplete         bool
+	LastBoughtAt       *string
+	TicketAverage      *string
+	TicketLastPurchase *string
+	StoreLastPurchase  *string
+	StoreMostFrequent  *string
+}
+
+func CustomerFrom(args []string) (*Customer, error) {
+	args[0] = SanitizeCpfOrCnpj(args[0])
+	args[3] = SanitizeNullable(args[3])
+	args[4] = SanitizeTicket(args[4])
+	args[5] = SanitizeTicket(args[5])
+	args[6] = SanitizeCpfOrCnpj(args[6])
+	args[7] = SanitizeCpfOrCnpj(args[7])
+
+	customer := &Customer{}
+
+	if err := ValidateCpfOrCnpj(args[0]); err != nil {
+		return nil, err
+	}
+
+	customer.Cpf = SanitizeCpfOrCnpj(args[0])
+	customer.Private = args[1] == "1"
+	customer.Incomplete = args[2] == "1"
+
+	if args[3] != "" {
+		customer.LastBoughtAt = &args[3]
+	}
+
+	if args[4] != "" {
+		customer.TicketAverage = &args[4]
+	}
+
+	if args[5] != "" {
+		customer.TicketLastPurchase = &args[5]
+	}
+
+	if args[6] != "" {
+		if err := ValidateCpfOrCnpj(args[6]); err != nil {
+			return nil, err
+		}
+
+		customer.StoreLastPurchase = &args[6]
+	}
+
+	if args[7] != "" {
+		if err := ValidateCpfOrCnpj(args[7]); err != nil {
+			return nil, err
+		}
+
+		customer.StoreMostFrequent = &args[7]
+	}
+
+	return customer, nil
+}
+
+func (c *Customer) ToArgs() []any {
+	args := make([]any, 8)
+	args[0] = c.Cpf
+	args[1] = c.Private
+	args[2] = c.Incomplete
+	args[3] = c.LastBoughtAt
+	args[4] = c.TicketAverage
+	args[5] = c.TicketLastPurchase
+	args[6] = c.StoreLastPurchase
+	args[7] = c.StoreMostFrequent
+
+	return args
+}
+
+// TODO:
+func ValidateCpfOrCnpj(val string) error {
+	if len(val) != 11 && len(val) != 14 {
+		return fmt.Errorf("invalid CNPJ: %s", val)
+	}
+	return nil
+}
+
+func SanitizeNullable(val string) string {
+	if val == "NULL" {
+		return ""
+	}
+	return val
+}
+
+func SanitizeCpfOrCnpj(val string) string {
+	if val == "NULL" {
+		return ""
+	}
+
+	res := ""
+	for _, r := range val {
+		if unicode.IsDigit(r) {
+			res += string(r)
+		}
+	}
+	return res
+}
+
+func SanitizeTicket(val string) string {
+	if val == "NULL" {
+		return ""
+	}
+
+	res := ""
+	for _, r := range val {
+		if r == '.' {
+			continue
+		}
+
+		if r == ',' {
+			res += "."
+		} else {
+			res += string(r)
+		}
+	}
+	return res
 }
