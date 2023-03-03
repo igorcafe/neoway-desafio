@@ -15,7 +15,7 @@ func main() {
 	if os.Getenv("PPROF") == "cpu" {
 		f, err := os.Create("cpu.prof")
 		if err != nil {
-			panic(err)
+			log.Fatalf("failed to create cpu.prof: %v", err)
 		}
 		log.Println("running pprof for CPU")
 		pprof.StartCPUProfile(f)
@@ -25,8 +25,7 @@ func main() {
 	log.Println("trying to connect to database", os.Getenv("DATABASE_URL"))
 	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		// TODO:
-		panic(err)
+		log.Fatalf("failed to connect to postgresql: %v", err)
 	}
 	defer db.Close(context.Background())
 
@@ -46,14 +45,12 @@ func main() {
 		);
 	`)
 	if err != nil {
-		// TODO:
-		panic(err)
+		log.Fatalf("failed to create table customer: %v", err)
 	}
 
 	f, err := os.Open("base_teste.txt")
 	if err != nil {
-		// TODO:
-		panic(err)
+		log.Fatalf("failed to open base_teste.txt: %v", err)
 	}
 
 	_, err = db.Prepare(context.Background(), "stmt-insert-customer",
@@ -71,8 +68,7 @@ func main() {
 	`)
 
 	if err != nil {
-		// TODO:
-		panic(err)
+		log.Fatalf("failed to prepare insert statement: %v", err)
 	}
 
 	scanner := bufio.NewScanner(f)
@@ -86,14 +82,14 @@ func main() {
 		cols := strings.Fields(scanner.Text())
 		customer, err := CustomerFrom(cols)
 		if err != nil {
-			// TODO:
-			panic(err)
+			log.Printf("failed to parse customer data (%v): %v", cols, err)
+			continue
 		}
 
 		_, err = db.Exec(context.Background(), "stmt-insert-customer", customer.ToArgs()...)
 		if err != nil {
-			// TODO:
-			panic(err)
+			log.Printf("failed to insert customer data (%v): %v", customer, err)
+			continue
 		}
 	}
 
