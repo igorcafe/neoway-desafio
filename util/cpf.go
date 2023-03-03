@@ -18,6 +18,20 @@ func ValidateCpfOrCnpj(val string) error {
 }
 
 func ValidateCpf(val string) error {
+	// checa se o CPF possui algum dígito distinto ou se então é formado só
+	// por um dígito repetido, por exemplo: 555.555.555-55
+	hasDistinctDigits := false
+	for i := 1; i < 11; i++ {
+		if val[i-1] != val[i] {
+			hasDistinctDigits = true
+			break
+		}
+	}
+
+	if !hasDistinctDigits {
+		return fmt.Errorf("Invalid CPF with no distinct digit: %s", val)
+	}
+
 	sum := 0
 
 	// Somando os 9 primeiros dígitos do CPF, aplicando os seguintes pesos:

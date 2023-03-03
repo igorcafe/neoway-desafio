@@ -20,12 +20,18 @@ func Test_ValidateCpfOrCnpj(t *testing.T) {
 		{val: "45091647007", wantErr: false},
 		{val: "45291647007", wantErr: true}, // alterar qualquer dígito deve causar erro
 		{val: "45091607007", wantErr: true}, // alterar qualquer dígito deve causar erro
+
+		// CPFs com dígitos iguais são matematicamente válidos, mas não devem ser aceitos
+		{val: "11111111111", wantErr: true},
+		{val: "22222222222", wantErr: true},
+		{val: "99999999999", wantErr: true},
+		{val: "00000000000", wantErr: true},
 	}
 
 	for _, tt := range tests {
 		err := ValidateCpfOrCnpj(tt.val)
 		if (err != nil) != tt.wantErr {
-			t.Fatalf("wantErr: %v, err: %v", tt.wantErr, err)
+			t.Fatalf("val: %s, wantErr: %v, err: %v", tt.val, tt.wantErr, err)
 		}
 	}
 }
