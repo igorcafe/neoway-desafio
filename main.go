@@ -78,8 +78,13 @@ func main() {
 
 	log.Println("started processing data")
 
+	succeeded := 0
+	total := 0
+
 	for scanner.Scan() {
-		cols := strings.Fields(scanner.Text())
+		total++
+
+		cols := strings.Fields(strings.ToUpper(scanner.Text()))
 		customer, err := CustomerFrom(cols)
 		if err != nil {
 			log.Printf("failed to parse customer data (%v): %v", cols, err)
@@ -91,7 +96,10 @@ func main() {
 			log.Printf("failed to insert customer data (%v): %v", customer, err)
 			continue
 		}
+
+		succeeded++
 	}
 
-	log.Println("finished processing data")
+	failed := total - succeeded
+	log.Printf("finished processing data: %d succeeded, %d failed, %d total", succeeded, failed, total)
 }
