@@ -17,7 +17,8 @@ func main() {
 		if err != nil {
 			log.Panicf("failed to create cpu.prof: %v", err)
 		}
-		log.Println("running pprof for CPU")
+		defer f.Close()
+		log.Println("pprof: profiling CPU")
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
