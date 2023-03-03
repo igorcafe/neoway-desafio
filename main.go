@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -27,58 +28,31 @@ func main() {
 	if len(os.Args) != 2 {
 		log.Panicf("Missing positional arg FILE. Try %s some_file.txt", os.Args[0])
 	}
+	basePath := os.Args[1]
 
 	log.Println("trying to connect to database", os.Getenv("DATABASE_URL"))
-	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+
 	if err != nil {
 		log.Panicf("failed to connect to postgresql: %v", err)
 	}
-	defer db.Close(context.Background())
 
+	defer conn.Close(context.Background())
 	log.Println("connection succeeded")
 
-	_, err = db.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS customer (
-			id                        SERIAL PRIMARY KEY,
-			cpf                       TEXT,
-			private                   BOOLEAN,
-			incomplete                BOOLEAN,
-			last_bought_at            DATE,
-			ticket_average            DECIMAL,
-			ticket_last_purchase      DECIMAL,
-			cnpj_most_frequent_store  TEXT,
-			cnpj_last_purchase_store  TEXT
-		);
-	`)
+	err = setupDatabase(conn)
 	if err != nil {
-		log.Panicf("failed to create table customer: %v", err)
+		log.Panic(err)
 	}
 
-	f, err := os.Open(os.Args[1])
+	f, err := os.Open(basePath)
 	if err != nil {
-		log.Panicf("failed to open %s: %v", os.Args[1], err)
+		log.Panicf("failed to open %s: %v", basePath, err)
 	}
 
-	log.Printf("using file: %s", os.Args[1])
+	log.Printf("using file: %s", basePath)
 
-	_, err = db.Prepare(context.Background(), "stmt-insert-customer",
-		`INSERT INTO Customer (
-			cpf,
-			private,
-			incomplete,
-			last_bought_at,
-			ticket_average,
-			ticket_last_purchase,
-			cnpj_most_frequent_store,
-			cnpj_last_purchase_store
-		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-	`)
-
-	if err != nil {
-		log.Panicf("failed to prepare insert statement: %v", err)
-	}
-
+	// Scanner é capaz de ler de forma buferizada e já separa os resultados por linha por padrão
 	scanner := bufio.NewScanner(f)
 
 	// ignorar primeira linha
@@ -106,7 +80,7 @@ func main() {
 		_ = batch.Queue("stmt-insert-customer", args...)
 
 		if total%batchSize == 0 {
-			n, err := sendBatch(db, batch)
+			n, err := sendBatch(conn, batch)
 			if err != nil {
 				log.Printf("failed to bulk insert: %v", err)
 				failed += n
@@ -117,17 +91,63 @@ func main() {
 		}
 	}
 
-	n, err := sendBatch(db, batch)
-	if err != nil {
-		log.Printf("failed to bulk insert: %v", err)
-		failed += n
-	} else {
-		succeeded += n
+	// envia o que pode ter sobrado no batch
+	if batch.Len() > 0 {
+		n, err := sendBatch(conn, batch)
+		if err != nil {
+			log.Printf("failed to bulk insert: %v", err)
+			failed += n
+		} else {
+			succeeded += n
+		}
 	}
 
 	log.Printf("finished processing data: %d succeeded, %d failed, %d total", succeeded, failed, total)
 }
 
+// cria a tabela customer se não existir, prepara o statement de inserção.
+// não inicializo a conexão aqui, porque prefiro fazer o defer conn.Close na main.
+func setupDatabase(conn *pgx.Conn) error {
+	_, err := conn.Exec(context.Background(), `
+		CREATE TABLE IF NOT EXISTS customer (
+			id                        SERIAL PRIMARY KEY,
+			cpf                       TEXT,
+			private                   BOOLEAN,
+			incomplete                BOOLEAN,
+			last_bought_at            DATE,
+			ticket_average            DECIMAL,
+			ticket_last_purchase      DECIMAL,
+			cnpj_most_frequent_store  TEXT,
+			cnpj_last_purchase_store  TEXT
+		);
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create table customer: %v", err)
+	}
+
+	_, err = conn.Prepare(context.Background(), "stmt-insert-customer",
+		`INSERT INTO Customer (
+			cpf,
+			private,
+			incomplete,
+			last_bought_at,
+			ticket_average,
+			ticket_last_purchase,
+			cnpj_most_frequent_store,
+			cnpj_last_purchase_store
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+	`)
+
+	if err != nil {
+		return fmt.Errorf("failed to prepare insert statement: %v", err)
+	}
+
+	return nil
+}
+
+// envia as queries que foram enfileiradas e as executa.
+// o batch não deve ser reutilizado.
 func sendBatch(conn *pgx.Conn, batch *pgx.Batch) (int, error) {
 	res := conn.SendBatch(context.Background(), batch)
 
