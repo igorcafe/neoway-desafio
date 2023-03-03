@@ -23,6 +23,10 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	if len(os.Args) != 2 {
+		log.Panicf("Missing positional arg FILE. Try %s some_file.txt", os.Args[0])
+	}
+
 	log.Println("trying to connect to database", os.Getenv("DATABASE_URL"))
 	db, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -49,9 +53,9 @@ func main() {
 		log.Panicf("failed to create table customer: %v", err)
 	}
 
-	f, err := os.Open("base_teste.txt")
+	f, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Panicf("failed to open base_teste.txt: %v", err)
+		log.Panicf("failed to open %s: %v", os.Args[1], err)
 	}
 
 	_, err = db.Prepare(context.Background(), "stmt-insert-customer",
