@@ -53,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	stmtInsertCustomer, err := db.Prepare(context.Background(), "stmt-insert-customer",
+	_, err = db.Prepare(context.Background(), "stmt-insert-customer",
 		`INSERT INTO Customer (
 			cpf,
 			private,
@@ -71,9 +71,6 @@ func main() {
 		// TODO:
 		panic(err)
 	}
-	_ = stmtInsertCustomer
-
-	// columnValues := make([]any, 8)
 
 	scanner := bufio.NewScanner(f)
 
