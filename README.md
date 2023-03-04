@@ -32,4 +32,23 @@ Resultado do benchmark da função SanitizeTicket (executada 50 mil vezes):
 - 5x mais rápida
 - usando 8x menos memória
 
-As duas funções anteriores faziam concatenação de strings, o que gerava várias alocações na heap desnecessárias
+As duas funções anteriores faziam concatenação de strings, o que gerava várias alocações na heap desnecessárias.
+Minha solução foi criar um `strings.Builder` e aumentar a capacidade dele para o tamanho da string.
+Dessa forma era garantido que não faria mais de uma alocação porque a string gerada sempre vai ser igual ou menor.
+
+Por exemplo:
+```go
+func SanitizeTicket(val string) string {
+  res := &strings.Builder{}
+  res.Grow(len(val))
+
+  for _, r := range val {
+    if (condicao) {
+      res.WriteRune(r)
+    }
+  }
+
+  // len(res) <= len(val), sempre
+  return res.String()
+}
+```
