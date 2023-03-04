@@ -8,11 +8,20 @@ Utilizará por padrão a base de dados fornecida de 50 mil linhas.
 # Estratégias de otimização de performance utilizadas
 
 ## Execução de queries em batch
+
 **Resultado 1** - batch com tamanho 50:
 - 95% de redução no tempo total de execução (37s para 2s)
 
 **Resultado 2** - batch com tamanho 1000:
 - redução de 50% no tempo total de execução (10s para 5s, com dado 7x maior)
+
+**Antes**: mais de 60% do tempo estava sendo gasto na função `Exec` do `pgx.Conn`:
+
+![image](https://user-images.githubusercontent.com/85039990/222931883-3904cbd6-4ee9-4430-b470-4096f995a8e2.png)
+
+**Depois**: só 20% do tempo é gasto com a função `SendBatch`
+
+![image](https://user-images.githubusercontent.com/85039990/222931984-03e7d90d-f60d-473d-b440-0b3158581c46.png)
 
 Em vez enviar os comandos de `INSERT` um por um para o banco, a execução em batch envia vários inserts de uma vez.
 
@@ -31,6 +40,12 @@ Resultado do benchmark da função SanitizeTicket (executada 50 mil vezes):
 - menos 55 mil alocações
 - 5x mais rápida
 - usando 8x menos memória
+
+**Antes**: múltiplas alocações concatenando a string
+![image](https://user-images.githubusercontent.com/85039990/222934212-ef1818f8-38ac-4d04-b7dd-7903e6460e19.png)
+
+**Depois**: faz somente uma alocação com a função `Grow` do `strings.Builder`
+![image](https://user-images.githubusercontent.com/85039990/222934236-68017b97-35f3-4722-9e4c-c7055545ddb6.png)
 
 As duas funções anteriores faziam concatenação de strings, o que gerava várias alocações na heap desnecessárias.
 Minha solução foi criar um `strings.Builder` e aumentar a capacidade dele para o tamanho da string.
