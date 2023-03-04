@@ -1,0 +1,18 @@
+- [ ] ler linhas do txt
+  - [x] split por espaço
+  - [x] tratar campos NULL
+  - [x] tratar booleans
+  - [ ] remover acentos
+  - [x] transformar em maiúsculo
+  - [x] validar CPF
+  - [ ] validar CNPJ
+- [ ] db
+  - [x] criar tabela
+  - [x] insert prepared statement
+  - [x] inserir
+  - [x] inserir em batch
+  - [ ] achar número ótimo de inserção em batch
+- [x] docker do meu projeto
+- [x] docker compose
+- [ ] docker compose encerrar com o app
+- [ ] README
