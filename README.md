@@ -67,3 +67,13 @@ func SanitizeTicket(val string) string {
   return res.String()
 }
 ```
+
+## Processar as linhas de forma concorrente
+
+Resultado:
+- pouco significativo
+
+Basicamente o que fiz foi processar N linhas concorrentemente, onde N é o número de CPUs lógicas (`runtime.NumCPU()`).
+Essas linhas eram então enviadas para uma outra goroutine responsável por enfileirar a query no batch.
+
+Eu imaginei que pudesse economizar alguns segundos porque as validações estavam tomando 20% do tempo total da aplicação, porém mesmo utilizando concorrência não tive melhora significativa.
