@@ -49,6 +49,7 @@ func main() {
 	if err != nil {
 		log.Panicf("failed to open %s: %v", basePath, err)
 	}
+	defer f.Close()
 
 	log.Printf("using file: %s", basePath)
 
