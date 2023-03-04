@@ -70,7 +70,7 @@ func processLines(conn *pgx.Conn, f io.Reader) {
 	total := 0
 
 	batch := &pgx.Batch{}
-	batchSize := 50
+	batchSize := 1000
 
 	for scanner.Scan() {
 		total++
