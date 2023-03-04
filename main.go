@@ -72,11 +72,14 @@ func processLines(conn *pgx.Conn, f io.Reader) {
 	batch := &pgx.Batch{}
 	batchSize := 50
 
-	// alocando uma única vez para evitar onerar o GC
-	args := make([]any, 8)
-
 	for scanner.Scan() {
 		total++
+
+		// a otimização de alocar o slice antes do loop e reutilizá-lo não pode ser
+		// usada, porque a query guarda a referência para o campo do slice, mas
+		// quando a query é de fato executada o valor de args foi alterado, fazendo
+		// com que um mesmo dado seja inserido múltiplas vezes a cada batch
+		args := make([]any, 8)
 
 		// lê uma linha e quebra em um slice de strings
 		line := strings.ToUpper(scanner.Text())
