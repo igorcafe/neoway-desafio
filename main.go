@@ -75,6 +75,7 @@ func main() {
 		err := util.SanitizeColumns(cols, args)
 		if err != nil {
 			log.Printf("failed to sanitize customer data (%v): %v", cols, err)
+			failed += 1
 			continue
 		}
 
