@@ -5,8 +5,10 @@ import (
 	"unicode"
 )
 
-func SanitizeColumns(cols []string) ([]any, error) {
-	res := make([]any, 8)
+func SanitizeColumns(cols []string, res []any) error {
+	for i := 0; i < len(res); i++ {
+		res[0] = nil
+	}
 
 	cpf := cols[0]
 	private := cols[1] == "1"
@@ -20,7 +22,7 @@ func SanitizeColumns(cols []string) ([]any, error) {
 	if cpf != "NULL" {
 		cpf, err := SanitizeCpfOrCnpj(cpf)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		res[0] = cpf
 	}
@@ -43,7 +45,7 @@ func SanitizeColumns(cols []string) ([]any, error) {
 	if storeLastPurchase != "NULL" {
 		storeLastPurchase, err := SanitizeCpfOrCnpj(storeLastPurchase)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		res[6] = storeLastPurchase
 	}
@@ -51,12 +53,12 @@ func SanitizeColumns(cols []string) ([]any, error) {
 	if storeMostFrequent != "NULL" {
 		storeMostFrequent, err := SanitizeCpfOrCnpj(storeMostFrequent)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		res[7] = storeMostFrequent
 	}
 
-	return res, nil
+	return nil
 }
 
 // Remove todos os caracteres, exceto os numéricos.

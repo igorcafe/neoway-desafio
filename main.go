@@ -66,12 +66,13 @@ func main() {
 
 	batch := &pgx.Batch{}
 	batchSize := 50
+	args := make([]any, 8)
 
 	for scanner.Scan() {
 		total++
 
 		cols := strings.Fields(strings.ToUpper(scanner.Text()))
-		args, err := util.SanitizeColumns(cols)
+		err := util.SanitizeColumns(cols, args)
 		if err != nil {
 			log.Printf("failed to sanitize customer data (%v): %v", cols, err)
 			continue
