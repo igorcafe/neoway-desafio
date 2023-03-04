@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -52,7 +53,10 @@ func main() {
 	defer f.Close()
 
 	log.Printf("using file: %s", basePath)
+	processLines(conn, f)
+}
 
+func processLines(conn *pgx.Conn, f io.Reader) {
 	// Scanner é capaz de ler de forma buferizada e já separa os resultados por linha por padrão
 	scanner := bufio.NewScanner(f)
 
@@ -67,12 +71,17 @@ func main() {
 
 	batch := &pgx.Batch{}
 	batchSize := 50
+
+	// alocando uma única vez para evitar onerar o GC
 	args := make([]any, 8)
 
 	for scanner.Scan() {
 		total++
 
-		cols := strings.Fields(strings.ToUpper(scanner.Text()))
+		// lê uma linha e quebra em um slice de strings
+		line := strings.ToUpper(scanner.Text())
+		cols := strings.Fields(line)
+
 		err := util.SanitizeColumns(cols, args)
 		if err != nil {
 			log.Printf("failed to sanitize customer data (%v): %v", cols, err)
@@ -82,7 +91,8 @@ func main() {
 
 		_ = batch.Queue("stmt-insert-customer", args...)
 
-		if total%batchSize == 0 {
+		// caso o batch atinja o tamanho definido, envia todas as queries e reseta o batch
+		if batch.Len() == batchSize {
 			n, err := sendBatch(conn, batch)
 			if err != nil {
 				log.Printf("failed to bulk insert: %v", err)
@@ -108,7 +118,7 @@ func main() {
 	log.Printf("finished processing data: %d succeeded, %d failed, %d total", succeeded, failed, total)
 }
 
-// cria a tabela customer se não existir, prepara o statement de inserção.
+// cria a tabela customer se não existir e prepara o statement de inserção.
 // não inicializo a conexão aqui, porque prefiro fazer o defer conn.Close na main.
 func setupDatabase(conn *pgx.Conn) error {
 	_, err := conn.Exec(context.Background(), `

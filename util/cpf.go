@@ -17,7 +17,10 @@ func ValidateCpfOrCnpj(val string) error {
 	return fmt.Errorf("invalid CPF or CNPJ with length %d: %s", len(val), val)
 }
 
+// Retornar nil se o CPF for válido, senão retorna um erro especificando
+// a validação que falhou
 func ValidateCpf(val string) error {
+
 	// checa se o CPF possui algum dígito distinto ou se então é formado só
 	// por um dígito repetido, por exemplo: 555.555.555-55
 	hasDistinctDigits := false

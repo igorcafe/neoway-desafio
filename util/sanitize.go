@@ -5,6 +5,9 @@ import (
 	"unicode"
 )
 
+// trata todos os campos de uma linha, aplicando validações e sanitizações nos
+// campos necessários.
+// retorna erro caso algum campo seja considerado inválido.
 func SanitizeColumns(cols []string, res []any) error {
 	for i := 0; i < len(res); i++ {
 		res[0] = nil
@@ -61,7 +64,8 @@ func SanitizeColumns(cols []string, res []any) error {
 	return nil
 }
 
-// Remove todos os caracteres, exceto os numéricos.
+// Remove todos os caracteres não numéricos e checa se é um CPF/CNPJ válido.
+// Retorna erro caso seja um CPF/CNPJ inválido.
 // Optei por não usar regexp por ser um caso mais simples.
 func SanitizeCpfOrCnpj(val string) (string, error) {
 	res := &strings.Builder{}
@@ -78,7 +82,7 @@ func SanitizeCpfOrCnpj(val string) (string, error) {
 	return s, err
 }
 
-// Remove ponto, se houver, e substitui vírgula por ponto
+// Remove ponto, se houver, e substitui vírgula por ponto no valor do ticket.
 func SanitizeTicket(val string) string {
 	res := &strings.Builder{}
 	res.Grow(len(val))
