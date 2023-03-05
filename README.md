@@ -1,6 +1,6 @@
 # Rodando a aplicação
 
-Executando a aplicação com as opções padrão:
+Executando a aplicação com as opções padrão (base de 50 mil linhas):
 
 ```sh
 docker compose up --build --abort-on-container-exit
