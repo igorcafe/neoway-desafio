@@ -20,10 +20,16 @@ func main() {
 	}
 
 	if len(os.Args) != 2 {
-		log.Panicf("Missing positional arg FILE. Try %s some_file.txt", os.Args[0])
 	}
-	basePath := os.Args[1]
+	basePath := os.Getenv("BASE_PATH")
+	if basePath == "" {
+		log.Panicln("Missing env variable BASE_PATH")
+	}
+
 	dbUrl := os.Getenv("DATABASE_URL")
+	if dbUrl == "" {
+		log.Panicln("Missing env variable DATABASE_URL")
+	}
 
 	runner, err := NewRunner(dbUrl, basePath)
 	if err != nil {

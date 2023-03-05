@@ -6,6 +6,18 @@ Executando a aplicação com as opções padrão:
 docker compose up --build --abort-on-container-exit
 ```
 
+Utilizando uma base 7x maior que a fornecida (350 mil linhas):
+
+```sh
+BASE_PATH=./resources/base_teste.350K.txt docker compose up --build --abort-on-container-exit
+```
+
+Utilizando a base de testes de 10 linhas:
+
+```sh
+BASE_PATH=./resources/base_teste.10.txt docker compose up --build --abort-on-container-exit
+```
+
 # Estratégias de otimização de performance utilizadas
 
 ## Execução de queries em batch

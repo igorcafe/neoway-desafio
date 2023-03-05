@@ -3,19 +3,23 @@ version: '3.9'
 services:
   db:
     image: postgres:15-alpine
-    ports:
-      - 5432:5432
     env_file:
       - ./.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-h", "db"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+      start_period: 1s
 
   app:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build: .
     restart: on-failure:1s
-    stdin_open: true
-    tty: true
     env_file:
       - ./.env
     environment:
-      - DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db
+      DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db
+      BASE_PATH: ${BASE_PATH:-./resources/base_teste.50K.txt}

@@ -3,7 +3,7 @@
 - [x] tratar booleans
 - [x] transformar em maiúsculo
 - [x] validar CPF
-- [ ] validar CNPJ
+- [x] validar CNPJ
 - [x] criar tabela
 - [x] insert prepared statement
 - [x] inserir
@@ -11,7 +11,8 @@
 - [x] achar número ótimo de inserção em batch
 - [x] docker do meu projeto
 - [x] docker compose
-- [ ] docker compose encerrar com o app
+- [x] docker compose encerrar com o app
 - [x] README
+- [x] arquivo de base customizável
 - [ ] teste automatizado
 - [ ] README: rodar testes
