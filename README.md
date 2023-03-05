@@ -1,9 +1,10 @@
 # Rodando a aplicação
-```sh
-docker compose up --build
-```
 
-Utilizará por padrão a base de dados fornecida de 50 mil linhas.
+Executando a aplicação com as opções padrão:
+
+```sh
+docker compose up --build --abort-on-container-exit
+```
 
 # Estratégias de otimização de performance utilizadas
 
