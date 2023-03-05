@@ -8,6 +8,7 @@ func Test_ValidateCpfOrCnpj(t *testing.T) {
 		val     string
 		wantErr bool
 	}{
+		// ----- CPFs
 		{val: "", wantErr: true},
 		{val: "0123456789", wantErr: true},
 		{val: "012345678910", wantErr: true},
@@ -26,6 +27,18 @@ func Test_ValidateCpfOrCnpj(t *testing.T) {
 		{val: "22222222222", wantErr: true},
 		{val: "99999999999", wantErr: true},
 		{val: "00000000000", wantErr: true},
+
+		// ----- CNPJs
+
+		// assim como CPF, dígitos repetidos são inválidos
+		{val: "00000000000000", wantErr: true},
+		{val: "33333333333333", wantErr: true},
+		{val: "99999999999999", wantErr: true},
+
+		{val: "11222333000181", wantErr: false},
+		{val: "92603334000178", wantErr: false},
+		{val: "34913963000106", wantErr: false}, // dígito 13 = 0
+		{val: "63915552000140", wantErr: false}, // dígito 14 = 0
 	}
 
 	for _, tt := range tests {
