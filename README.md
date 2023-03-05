@@ -15,7 +15,7 @@ BASE_PATH=./resources/base_teste.350K.txt docker compose up --build --abort-on-c
 Utilizando a base de testes de 10 linhas:
 
 ```sh
-BASE_PATH=./resources/base_teste.10.txt docker compose up --build --abort-on-container-exit
+BASE_PATH=./resources/base_teste.3.txt docker compose up --build --abort-on-container-exit
 ```
 
 # Estratégias de otimização de performance utilizadas

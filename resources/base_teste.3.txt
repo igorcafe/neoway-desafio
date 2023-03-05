@@ -1,0 +1,4 @@
+CPF                PRIVATE     INCOMPLETO  DATA DA ÚLTIMA COMPRA TICKET MÉDIO          TICKET DA ÚLTIMA COMPRA LOJA MAIS FREQUÊNTE LOJA DA ÚLTIMA COMPRA
+123.456.789-09     0           0           NULL                  NULL                  NULL                    NULL                NULL
+987.654.321-00     1           1           2023-03-03            0,59                  1.000.000,12            11.222.333/4444-97  12.345.678/9101-40
+111.222.333-96     0           1           2000-02-24            29,90                 NULL                    99.888.777/6666-55  NULL
