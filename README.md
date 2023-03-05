@@ -26,7 +26,7 @@ BASE_PATH=./resources/base_teste.3.txt docker compose up --build --abort-on-cont
 - 95% de redução no tempo total de execução (37s para 2s)
 
 **Resultado 2** - batch com tamanho 1000:
-- redução de 50% no tempo total de execução (10s para 5s, com dado 7x maior)
+- redução de mais 50% no tempo total de execução (10s para 5s, com dado 7x maior)
 
 **Antes**: mais de 60% do tempo estava sendo gasto na função `Exec` do `pgx.Conn`:
 
