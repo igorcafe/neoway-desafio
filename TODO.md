@@ -14,4 +14,5 @@
 - [x] docker compose encerrar com o app
 - [x] README
 - [x] arquivo de base customizável
+- [x] testes unitários
 - [x] README: rodar testes com docker compose
