@@ -2,6 +2,58 @@ package util
 
 import "testing"
 
+func Test_SanitizeColumns(t *testing.T) {
+	got := make([]any, 8)
+
+	tests := []struct {
+		cols    []string
+		want    []any
+		wantErr bool
+	}{
+		{
+			cols:    []string{"987.654.321-00", "1", "0", "2020-10-05", "0,35", "NULL", "NULL", "57.545.869/0001-39"},
+			want:    []any{"98765432100", true, false, "2020-10-05", "0.35", nil, nil, "57545869000139"},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		err := SanitizeColumns(tt.cols, got)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("wantErr: %v, err: %v", tt.wantErr, err)
+		}
+
+		for i := 0; i < 8; i++ {
+			if got[i] != tt.want[i] {
+				t.Errorf("at index %d, want: %v, got: %v", i, tt.want[i], got[i])
+			}
+		}
+	}
+}
+
+func Test_SanitizeCpfOrCnpj(t *testing.T) {
+	tests := []struct {
+		val     string
+		want    string
+		wantErr bool
+	}{
+		{"987.654.321-00", "98765432100", false},
+		{"987¡²³¢^³¢.654.321-00", "98765432100", false},
+		{"987.654.321-70", "98765432170", true},
+	}
+
+	for _, tt := range tests {
+		got, err := SanitizeCpfOrCnpj(tt.val)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("wantErr: %v, err: %v", tt.wantErr, err)
+		}
+
+		if got != tt.want {
+			t.Errorf("want: %s, got: %s", tt.want, got)
+		}
+	}
+}
+
 func Test_SanitizeTicket(t *testing.T) {
 	tests := []struct {
 		val  string
