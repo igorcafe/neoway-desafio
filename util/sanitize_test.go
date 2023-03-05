@@ -2,6 +2,24 @@ package util
 
 import "testing"
 
+func Test_SanitizeTicket(t *testing.T) {
+	tests := []struct {
+		val  string
+		want string
+	}{
+		{"12,90", "12.90"},
+		{"0,00", "0.00"},
+		{"1.500,47", "1500.47"},
+	}
+
+	for _, tt := range tests {
+		got := SanitizeTicket(tt.val)
+		if got != tt.want {
+			t.Errorf("want: %s, got: %s", tt.want, got)
+		}
+	}
+}
+
 // antes do strings.Builder:   27740725 ns/op  9600070 B/op  1350000 allocs/op
 // depois do strings.Builder:   4246351 ns/op  1200003 B/op    50000 allocs/op
 func Benchmark_SanitizeCpfOrCnpj_50K(b *testing.B) {
