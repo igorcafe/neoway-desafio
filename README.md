@@ -12,7 +12,7 @@ Utilizando uma base 7x maior que a fornecida (350 mil linhas):
 BASE_PATH=./resources/base_teste.350K.txt docker compose up app --build
 ```
 
-Utilizando a base de testes de 10 linhas:
+Utilizando a base de testes de 3 linhas:
 
 ```sh
 BASE_PATH=./resources/base_teste.3.txt docker compose up app --build
