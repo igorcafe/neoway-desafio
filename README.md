@@ -21,7 +21,7 @@ BASE_PATH=./resources/base_teste.3.txt docker compose up app --build
 Rodando testes unitários dentro do container:
 
 ```sh
-docker compose run test
+docker compose run --rm test
 ```
 
 # Estratégias de otimização de performance utilizadas
