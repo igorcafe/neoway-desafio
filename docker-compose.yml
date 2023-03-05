@@ -23,3 +23,7 @@ services:
     environment:
       DATABASE_URL: postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@db
       BASE_PATH: ${BASE_PATH:-./resources/base_teste.50K.txt}
+
+  test:
+    build: .
+    command: go test -v ./...

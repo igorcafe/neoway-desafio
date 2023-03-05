@@ -3,19 +3,25 @@
 Executando a aplicação com as opções padrão (base de 50 mil linhas):
 
 ```sh
-docker compose up --build --abort-on-container-exit
+docker compose up app --build
 ```
 
 Utilizando uma base 7x maior que a fornecida (350 mil linhas):
 
 ```sh
-BASE_PATH=./resources/base_teste.350K.txt docker compose up --build --abort-on-container-exit
+BASE_PATH=./resources/base_teste.350K.txt docker compose up app --build
 ```
 
 Utilizando a base de testes de 10 linhas:
 
 ```sh
-BASE_PATH=./resources/base_teste.3.txt docker compose up --build --abort-on-container-exit
+BASE_PATH=./resources/base_teste.3.txt docker compose up app --build
+```
+
+Rodando testes unitários dentro do container:
+
+```sh
+docker compose run test
 ```
 
 # Estratégias de otimização de performance utilizadas
